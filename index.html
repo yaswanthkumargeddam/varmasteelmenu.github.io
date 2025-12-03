@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Restaurant — Menu</title>
+  <meta name="theme-color" content="#0f172a" />
+  <style>
+    :root{
+      --bg:#0b1020;          /* deep slate */
+      --card:#121a33;        /* card background */
+      --ink:#e6eaf6;         /* primary text */
+      --muted:#9fb0d5;       /* secondary text */
+      --accent:#7cafff;      /* accent */
+      --pill:#1a2447;        /* pill background */
+      --ok:#22c55e;          /* highlight */
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --radius:16px;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    html,body{height:100%;}
+    body{margin:0;font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";background:radial-gradient(1200px 800px at 70% -10%, #1b2450 0%, var(--bg) 55%);color:var(--ink);}    
+    .wrap{max-width:1000px;margin:0 auto;padding:24px;}
+    header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg, rgba(11,16,32,.92), rgba(11,16,32,.75));backdrop-filter:blur(8px);}
+    .bar{display:flex;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid rgba(255,255,255,.06);} 
+    .logo{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.2px;}
+    .logo .dot{width:12px;height:12px;border-radius:999px;background:conic-gradient(from 200deg, var(--accent), #a9ffea);} 
+    .pill{background:var(--pill);border:1px solid rgba(255,255,255,.06);padding:10px 12px;border-radius:999px;color:var(--ink);display:flex;align-items:center;gap:10px;}
+    .search{flex:1;min-width:160px;}
+    .search input{all:unset;width:100%;}
+    .btn{all:unset;background:linear-gradient(180deg,#8ab5ff,#7cafff);color:#081028;padding:10px 16px;border-radius:999px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);} 
+    .hint{font-size:12px;color:var(--muted);}
+
+    .tabs{display:flex;flex-wrap:wrap;gap:8px;padding:14px 24px;}
+    .tab{padding:8px 12px;border-radius:999px;background:var(--pill);border:1px solid transparent;color:var(--muted);cursor:pointer}
+    .tab.active{color:#081028;background:linear-gradient(180deg,#bfe0ff,#89b3ff);font-weight:700}
+
+    .grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:14px;padding:24px;}
+    @media (min-width:640px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media (min-width:960px){.grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;}
+    .title{font-weight:700;}
+    .desc{color:var(--muted);font-size:14px;}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .price{font-weight:800;background:var(--pill);padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.08);}
+    .t-veg{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.35)}
+    .t-spicy{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35)}
+    .t-new{background:rgba(124,175,255,.2);border-color:rgba(124,175,255,.45)}
+
+    footer{position:sticky;bottom:0;z-index:30;background:linear-gradient(180deg, rgba(11,16,32,.4), rgba(11,16,32,.95));backdrop-filter:blur(8px);}
+    .fbar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 24px;border-top:1px solid rgba(255,255,255,.06)}
+    .ghost{all:unset;color:var(--ink);padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.12);cursor:pointer}
+
+    /* Print nice */
+    @media print{
+      header, footer, .hint{display:none !important}
+      body{background:#fff;color:#111}
+      .card{border:1px solid #ddd;box-shadow:none}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar wrap">
+      <div class="logo"><div class="dot"></div><span id="brand">My Restaurant</span></div>
+      <div class="pill search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.3-4.3m1.55-4.45a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="q" placeholder="Search dishes… (veg, spicy, pasta)" />
+      </div>
+      <button class="btn" id="callBtn">Call</button>
+    </div>
+    <div class="tabs wrap" id="tabs"></div>
+  </header>
+
+  <main class="wrap">
+    <p class="hint">Tip: you can link directly to a category with <code>#pasta</code> or <code>#drinks</code> in the URL.</p>
+    <section class="grid" id="list" aria-live="polite"></section>
+  </main>
+
+  <footer>
+    <div class="fbar wrap">
+      <button class="ghost" onclick="window.print()">Print menu</button>
+      <div style="opacity:.7">Scan & browse • Updated <span id="updated"></span></div>
+    </div>
+  </footer>
+
+  <script>
+  // ==== CONFIG: edit these to make it yours ====
+  const CONFIG = {
+    brand: "My Restaurant",
+    phone: "+91 98765 43210",
+    currency: "₹",
+    updatedAt: new Date().toISOString().slice(0,10), // YYYY-MM-DD
+    // Menu data: minimal fields shown below. Add/adjust as needed.
+    menu: [
+      {name:"Margherita Pizza", price:299, desc:"San Marzano, mozzarella, basil", tags:["veg"], cat:"pizza"},
+      {name:"Paneer Tikka Pizza", price:379, desc:"Paneer, onions, peppers, makhani drizzle", tags:["veg","new"], cat:"pizza"},
+      {name:"Pepperoni", price:399, desc:"Beef pepperoni, mozzarella, oregano", tags:["spicy"], cat:"pizza"},
+      {name:"Pasta Alfredo", price:329, desc:"Creamy parmesan sauce", tags:["veg"], cat:"pasta"},
+      {name:"Arrabbiata", price:339, desc:"Tomato, garlic, chilli", tags:["spicy"], cat:"pasta"},
+      {name:"Caesar Salad", price:249, desc:"Romaine, parmesan, croutons", tags:[], cat:"salads"},
+      {name:"Masala Fries", price:179, desc:"Crispy & chatpata", tags:["spicy","veg"], cat:"sides"},
+      {name:"Brownie Sundae", price:219, desc:"Warm brownie, ice-cream", tags:["new"], cat:"desserts"},
+      {name:"Cold Coffee", price:149, desc:"Blended, mildly sweet", tags:[], cat:"drinks"},
+      {name:"Fresh Lime Soda", price:119, desc:"Sweet or salted", tags:["veg"], cat:"drinks"}
+    ]
+  }
+  // ============================================
+
+  // derive category list from menu
+  const categories = Array.from(new Set(CONFIG.menu.map(i=>i.cat))).sort();
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  function formatPrice(p){return `${CONFIG.currency}${p.toLocaleString('en-IN')}`}
+
+  function tagClass(t){
+    if(t.toLowerCase()==='veg') return 'tag t-veg';
+    if(t.toLowerCase()==='spicy') return 'tag t-spicy';
+    if(t.toLowerCase()==='new') return 'tag t-new';
+    return 'tag';
+  }
+
+  function renderTabs(){
+    const tabsEl = $('#tabs');
+    tabsEl.innerHTML = '';
+    const allBtn = document.createElement('button');
+    allBtn.className = 'tab active';
+    allBtn.textContent = 'All';
+    allBtn.dataset.cat = '';
+    tabsEl.appendChild(allBtn);
+    categories.forEach(c=>{
+      const b = document.createElement('button');
+      b.className = 'tab';
+      b.textContent = c.charAt(0).toUpperCase()+c.slice(1);
+      b.dataset.cat = c;
+      tabsEl.appendChild(b);
+    });
+    tabsEl.addEventListener('click', e=>{
+      if(!e.target.classList.contains('tab')) return;
+      $$('.tab').forEach(t=>t.classList.remove('active'));
+      e.target.classList.add('active');
+      const cat = e.target.dataset.cat||'';
+      const q = $('#q').value.trim();
+      renderList(filterItems(q, cat));
+      if(cat) location.hash = cat; else history.replaceState(null, '', location.pathname);
+    });
+  }
+
+  function filterItems(q, cat){
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    return CONFIG.menu.filter(it=>{
+      const inCat = !cat || it.cat===cat;
+      if(!inCat) return false;
+      if(terms.length===0) return true;
+      const hay = `${it.name} ${it.desc} ${it.tags.join(' ')}`.toLowerCase();
+      return terms.every(t=> hay.includes(t));
+    });
+  }
+
+  function renderList(items){
+    const list = $('#list');
+    list.innerHTML = '';
+    if(items.length===0){
+      list.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center">No items match your search.</div>`;
+      return;
+    }
+    items.forEach(it=>{
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="row">
+          <div class="title">${it.name}</div>
+          <div class="price">${formatPrice(it.price)}</div>
+        </div>
+        <div class="desc">${it.desc||''}</div>
+        <div class="tags">${(it.tags||[]).map(t=>`<span class="${tagClass(t)}">${t}</span>`).join('')}</div>
+      `;
+      list.appendChild(card);
+    })
+  }
+
+  function applyHashCategory(){
+    const cat = decodeURIComponent(location.hash.replace('#',''));
+    if(!cat) return;
+    const tab = $$('.tab').find(t=>t.dataset.cat===cat);
+    if(tab){
+      tab.click();
+    }
+  }
+
+  // Boot
+  document.addEventListener('DOMContentLoaded', ()=>{
+    $('#brand').textContent = CONFIG.brand;
+    $('#callBtn').addEventListener('click', ()=>{
+      if(CONFIG.phone) window.location.href = `tel:${CONFIG.phone.replace(/\s+/g,'')}`;
+    });
+    $('#updated').textContent = CONFIG.updatedAt;
+
+    renderTabs();
+    renderList(CONFIG.menu);
+
+    $('#q').addEventListener('input', (e)=>{
+      const cat = $$('.tab.active')[0]?.dataset.cat || '';
+      renderList(filterItems(e.target.value, cat));
+    });
+
+    applyHashCategory();
+  });
+  </script>
+</body>
+</html>
